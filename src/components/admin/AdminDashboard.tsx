@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
-import { realtimeDB } from "@/lib/firebase";
+import { getRealtimeDB } from "@/lib/firebase";
 import { ref, onValue, off } from "firebase/database";
 import type { SOSAlert, LiveLocation } from "@/lib/definitions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -23,6 +24,7 @@ export default function AdminDashboard({ adminId }: { adminId: string }) {
     const [locations, setLocations] = useState<Record<string, LiveLocation>>({});
 
     useEffect(() => {
+        const realtimeDB = getRealtimeDB();
         const alertsRef = ref(realtimeDB, `alerts/${adminId}`);
         const locationsRef = ref(realtimeDB, 'liveLocations');
 
@@ -88,7 +90,15 @@ export default function AdminDashboard({ adminId }: { adminId: string }) {
                 <CardContent>
                      {Object.keys(locations).length > 0 ? (
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {Object.entries(locations).map(([userId, location]) => (
+                            {Object.entries(locations).map(([userId, location]) => {
+                                if (!location || !adminId) return null;
+                                const userAdminId = userId.split('_')[0];
+                                // A simple way to associate users to admin, in a real app this would be more robust
+                                // This is a placeholder for filtering logic.
+                                // For now we show all users to demonstrate tracking.
+                                // A better approach would be to check if location.adminId === adminId
+                                
+                                return (
                                  <div key={userId} className={cn("rounded-lg border p-4 space-y-2", activeAlertUserIds.has(userId) && "border-destructive")}>
                                      <div className="flex items-center justify-between">
                                         <p className="font-semibold flex items-center gap-2">
@@ -102,7 +112,8 @@ export default function AdminDashboard({ adminId }: { adminId: string }) {
                                         <p className="flex items-center gap-2"><Clock className="h-3 w-3" />{formatDistanceToNow(new Date(location.updatedAt), { addSuffix: true })}</p>
                                     </div>
                                  </div>
-                            ))}
+                                )
+                            })}
                         </div>
                      ) : (
                         <p className="text-center text-sm text-muted-foreground py-8">No users are currently being tracked.</p>

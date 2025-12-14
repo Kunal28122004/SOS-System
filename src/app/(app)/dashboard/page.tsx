@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import LocationCard from "@/components/dashboard/LocationCard";
 import SOSButton from "@/components/dashboard/SOSButton";
 import EmergencyContacts from "@/components/dashboard/EmergencyContacts";
