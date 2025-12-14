@@ -69,7 +69,7 @@ export default function AuthForm() {
           <form action={userFormAction} className="space-y-4">
             <CardTitle className="pt-2 text-lg">User Sign-in / Sign-up</CardTitle>
             <CardDescription>
-              Enter your details to log in or create an account.
+              Enter your details to log in or create a new account.
             </CardDescription>
             <div className="space-y-2">
               <Label htmlFor="userName">Your Name</Label>
@@ -98,8 +98,10 @@ export default function AuthForm() {
                 name="adminId"
                 placeholder="The ID of the admin to notify"
                 required
+                defaultValue="city-pd"
                 disabled={isUserFormPending}
               />
+               <p className="text-xs text-muted-foreground">Default admin code is 'city-pd'</p>
             </div>
             <SubmitButton className="w-full" disabled={isUserFormPending}>Continue as User</SubmitButton>
           </form>
@@ -107,7 +109,7 @@ export default function AuthForm() {
           <form action={adminFormAction} className="space-y-4">
             <CardTitle className="pt-2 text-lg">Admin Access</CardTitle>
             <CardDescription>
-              Enter your credentials to monitor alerts.
+              Enter credentials to monitor alerts. ID is 'Admin', Password is 'Admin123'.
             </CardDescription>
             <div className="space-y-2">
               <Label htmlFor="adminId">Admin ID</Label>
@@ -115,6 +117,7 @@ export default function AuthForm() {
                 id="adminId"
                 name="adminId"
                 placeholder="Admin"
+                defaultValue="Admin"
                 required
                 disabled={isAdminFormPending}
               />
@@ -126,6 +129,7 @@ export default function AuthForm() {
                 name="password"
                 type="password"
                 placeholder="Password"
+                defaultValue="Admin123"
                 required
                 disabled={isAdminFormPending}
               />

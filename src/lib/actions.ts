@@ -50,7 +50,8 @@ export async function loginAsUser(prevState: any, formData: FormData) {
     adminId,
   };
 
-  await adminDb.collection("users").doc(user.id).set(user);
+  // This will create a new user or overwrite an existing one with the same phone number
+  await adminDb.collection("users").doc(user.id).set(user, { merge: true });
   await createSession(user);
   revalidatePath("/");
   redirect("/dashboard");
@@ -81,13 +82,13 @@ export async function loginAsAdmin(prevState: any, formData: FormData) {
         const adminRef = adminDb.collection('admins').doc(hardcodedAdminId);
         const adminSnap = await adminRef.get();
         if (!adminSnap.exists) {
-            await adminRef.set({ name: admin.name });
+            await adminRef.set({ name: admin.name, role: 'admin' });
         }
     }
 
 
     await createSession(admin);
-    revalidatePath("/");
+revalidatePath("/", "layout");
     redirect("/admin");
 }
 
