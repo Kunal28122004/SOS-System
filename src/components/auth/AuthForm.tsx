@@ -25,8 +25,8 @@ export default function AuthForm() {
   const [role, setRole] = React.useState<Role>("user");
   const { toast } = useToast();
 
-  const [userFormState, userFormAction] = useActionState(loginAsUser, null);
-  const [adminFormState, adminFormAction] = useActionState(loginAsAdmin, null);
+  const [userFormState, userFormAction, isUserFormPending] = useActionState(loginAsUser, null);
+  const [adminFormState, adminFormAction, isAdminFormPending] = useActionState(loginAsAdmin, null);
 
   React.useEffect(() => {
     if (userFormState?.error) {
@@ -77,6 +77,7 @@ export default function AuthForm() {
                 name="name"
                 placeholder="e.g., John Doe"
                 required
+                disabled={isUserFormPending}
               />
             </div>
             <div className="space-y-2">
@@ -86,6 +87,7 @@ export default function AuthForm() {
                 name="phone"
                 placeholder="e.g., 9876543210"
                 required
+                disabled={isUserFormPending}
               />
             </div>
             <div className="space-y-2">
@@ -95,9 +97,10 @@ export default function AuthForm() {
                 name="adminId"
                 placeholder="The ID of the admin to notify"
                 required
+                disabled={isUserFormPending}
               />
             </div>
-            <SubmitButton className="w-full">Continue as User</SubmitButton>
+            <SubmitButton className="w-full" disabled={isUserFormPending}>Continue as User</SubmitButton>
           </form>
         ) : (
           <form action={adminFormAction} className="space-y-4">
@@ -112,6 +115,7 @@ export default function AuthForm() {
                 name="name"
                 placeholder="e.g., City Police Dept."
                 required
+                disabled={isAdminFormPending}
               />
             </div>
             <div className="space-y-2">
@@ -121,9 +125,10 @@ export default function AuthForm() {
                 name="adminId"
                 placeholder="Create a unique ID for users"
                 required
+                disabled={isAdminFormPending}
               />
             </div>
-            <SubmitButton className="w-full">Continue as Admin</SubmitButton>
+            <SubmitButton className="w-full" disabled={isAdminFormPending}>Continue as Admin</SubmitButton>
           </form>
         )}
       </CardContent>

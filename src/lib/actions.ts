@@ -3,18 +3,33 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { db, realtimeDB } from "@/lib/firebase";
-import {
-  collection,
-  doc,
-  setDoc,
-  getDoc,
-  addDoc,
-  getDocs,
-  deleteDoc,
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  addDoc, 
+  getDocs, 
+  deleteDoc, 
+  collection 
 } from "firebase/firestore";
-import { ref, set, push, get } from "firebase/database";
+import { getDatabase, ref, set, push, get } from "firebase/database";
+import { initializeApp, getApps, getApp } from "firebase/app";
+
 import type { User, Admin, EmergencyContact } from "./definitions";
+
+// This is a server-side only Firebase instance.
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+};
+
+const serverApp = !getApps().length ? initializeApp(firebaseConfig, "server") : getApp("server");
+const db = getFirestore(serverApp);
+const realtimeDB = getDatabase(serverApp);
+
 
 const COOKIE_NAME = "guardianangel-session";
 
@@ -57,6 +72,7 @@ export async function loginAsUser(prevState: any, formData: FormData) {
 
   await setDoc(doc(db, "users", user.id), user);
   await createSession(user);
+  revalidatePath("/");
   redirect("/dashboard");
 }
 
@@ -77,6 +93,7 @@ export async function loginAsAdmin(prevState: any, formData: FormData) {
 
   await setDoc(doc(db, "admins", admin.id), admin);
   await createSession(admin);
+  revalidatePath("/");
   redirect("/admin");
 }
 
