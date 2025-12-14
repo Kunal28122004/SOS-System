@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -66,9 +67,9 @@ export default function AuthForm() {
       <CardContent className="p-4">
         {role === "user" ? (
           <form action={userFormAction} className="space-y-4">
-            <CardTitle className="pt-2 text-lg">User Access</CardTitle>
+            <CardTitle className="pt-2 text-lg">User Sign-in / Sign-up</CardTitle>
             <CardDescription>
-              Enter your information to send SOS alerts.
+              Enter your details to log in or create an account.
             </CardDescription>
             <div className="space-y-2">
               <Label htmlFor="userName">Your Name</Label>
@@ -109,21 +110,22 @@ export default function AuthForm() {
               Enter your credentials to monitor alerts.
             </CardDescription>
             <div className="space-y-2">
-              <Label htmlFor="adminName">Admin Name</Label>
+              <Label htmlFor="adminId">Admin ID</Label>
               <Input
-                id="adminName"
-                name="name"
-                placeholder="e.g., City Police Dept."
+                id="adminId"
+                name="adminId"
+                placeholder="Admin"
                 required
                 disabled={isAdminFormPending}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="adminId">Admin ID</Label>
+              <Label htmlFor="adminPassword">Password</Label>
               <Input
-                id="adminId"
-                name="adminId"
-                placeholder="Create a unique ID for users"
+                id="adminPassword"
+                name="password"
+                type="password"
+                placeholder="Password"
                 required
                 disabled={isAdminFormPending}
               />

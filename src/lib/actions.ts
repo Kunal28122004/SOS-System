@@ -57,27 +57,38 @@ export async function loginAsUser(prevState: any, formData: FormData) {
 }
 
 export async function loginAsAdmin(prevState: any, formData: FormData) {
-    if (!adminDb) {
-        return { error: "Firebase Admin is not configured." };
+    const adminId = formData.get("adminId") as string;
+    const password = formData.get("password") as string;
+
+    if (adminId !== 'Admin' || password !== 'Admin123') {
+        return { error: "Invalid credentials." };
     }
-  const name = formData.get("name") as string;
-  const adminId = formData.get("adminId") as string;
 
-  if (!name || !adminId) {
-    return { error: "Please fill in all fields." };
-  }
+    // This is the hardcoded admin user that will be used for the session.
+    // The `id` here MUST match an admin document in Firestore for users to be able to connect to it.
+    // We will ensure this document exists.
+    const hardcodedAdminId = "city-pd";
 
-  const admin: Admin = {
-    id: adminId,
-    name,
-    phone: "N/A", // Admin phone not used in this flow
-    role: "admin",
-  };
+    const admin: Admin = {
+        id: hardcodedAdminId,
+        name: "City Police Department", // A display name for the admin
+        phone: "N/A",
+        role: "admin",
+    };
+    
+    if (adminDb) {
+        // Ensure the admin document exists in Firestore so users can link to it.
+        const adminRef = adminDb.collection('admins').doc(hardcodedAdminId);
+        const adminSnap = await adminRef.get();
+        if (!adminSnap.exists) {
+            await adminRef.set({ name: admin.name });
+        }
+    }
 
-  await adminDb.collection("admins").doc(admin.id).set(admin);
-  await createSession(admin);
-  revalidatePath("/");
-  redirect("/admin");
+
+    await createSession(admin);
+    revalidatePath("/");
+    redirect("/admin");
 }
 
 export async function logout() {
