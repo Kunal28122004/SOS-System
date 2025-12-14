@@ -16,10 +16,10 @@ const firebaseConfig = {
 // Prevent multiple initializations
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// Firestore (safe)
+// Firestore (for client-side usage)
 export const db = getFirestore(app);
 
-// Realtime DB (lazy – safe for build)
+// Realtime DB (for client-side usage)
 export const getRealtimeDB = () => {
   return getDatabase(app);
 };

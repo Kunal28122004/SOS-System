@@ -4,20 +4,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  addDoc, 
-  getDocs, 
-  deleteDoc, 
-  collection 
-} from "firebase/firestore";
-import { ref, set, push } from "firebase/database";
-import { db, getRealtimeDB } from "./firebase";
+import { set, push } from "firebase/database";
+import { getRealtimeDB } from "./firebase";
+import { adminDb, adminRtdb } from "./firebase-admin";
 
 import type { User, Admin, EmergencyContact, LiveLocation } from "./definitions";
-  
+
 const COOKIE_NAME = "guardianangel-session";
 
 // --- AUTH ACTIONS ---
@@ -42,9 +34,9 @@ export async function loginAsUser(prevState: any, formData: FormData) {
   }
 
   // Check if admin exists
-  const adminRef = doc(db, "admins", adminId);
-  const adminSnap = await getDoc(adminRef);
-  if (!adminSnap.exists()) {
+  const adminRef = adminDb.collection("admins").doc(adminId);
+  const adminSnap = await adminRef.get();
+  if (!adminSnap.exists) {
     return { error: "Invalid Admin ID. This admin does not exist." };
   }
 
@@ -57,7 +49,7 @@ export async function loginAsUser(prevState: any, formData: FormData) {
     adminId,
   };
 
-  await setDoc(doc(db, "users", user.id), user);
+  await adminDb.collection("users").doc(user.id).set(user);
   await createSession(user);
   revalidatePath("/");
   redirect("/dashboard");
@@ -78,7 +70,7 @@ export async function loginAsAdmin(prevState: any, formData: FormData) {
     role: "admin",
   };
 
-  await setDoc(doc(db, "admins", admin.id), admin);
+  await adminDb.collection("admins").doc(admin.id).set(admin);
   await createSession(admin);
   revalidatePath("/");
   redirect("/admin");
@@ -112,7 +104,6 @@ export async function triggerSOS(message: string, location: LiveLocation | null)
     return { error: "Location not available. Please enable GPS." };
   }
 
-  const realtimeDB = getRealtimeDB();
   const alertData = {
     userId: user.id,
     userName: user.name,
@@ -126,8 +117,8 @@ export async function triggerSOS(message: string, location: LiveLocation | null)
     status: "active",
   };
 
-  const alertsRef = ref(realtimeDB, `alerts/${user.adminId}`);
-  await push(alertsRef, alertData);
+  const alertsRef = adminRtdb.ref(`alerts/${user.adminId}`);
+  await alertsRef.push(alertData);
 
   // Here you would trigger a cloud function to send SMS/email
   console.log("SOS Triggered. In a real app, notifications would be sent.");
@@ -144,10 +135,9 @@ export async function updateLocation(location: {
   const session = await getSession();
   if (session?.user?.role !== "user") return;
   const user = session.user as User;
-  
-  const realtimeDB = getRealtimeDB();
+
   const locationData = { ...location, updatedAt: Date.now() };
-  await set(ref(realtimeDB, `liveLocations/${user.id}`), locationData);
+  await adminRtdb.ref(`liveLocations/${user.id}`).set(locationData);
 }
 
 // --- CONTACTS ACTIONS ---
@@ -166,8 +156,8 @@ export async function addContact(formData: FormData) {
     return { error: "Please provide both name and contact info." };
   }
 
-  const contactsCollectionRef = collection(db, "users", user.id, "contacts");
-  await addDoc(contactsCollectionRef, { name, phoneOrEmail });
+  const contactsCollectionRef = adminDb.collection("users").doc(user.id).collection("contacts");
+  await contactsCollectionRef.add({ name, phoneOrEmail });
 
   revalidatePath("/dashboard");
   return { success: "Contact added successfully." };
@@ -180,8 +170,8 @@ export async function getContacts(): Promise<EmergencyContact[]> {
   }
   const user = session.user as User;
 
-  const contactsCollectionRef = collection(db, "users", user.id, "contacts");
-  const snapshot = await getDocs(contactsCollectionRef);
+  const contactsCollectionRef = adminDb.collection("users").doc(user.id).collection("contacts");
+  const snapshot = await contactsCollectionRef.get();
   
   return snapshot.docs.map(doc => ({
     id: doc.id,
@@ -196,8 +186,8 @@ export async function removeContact(id: string) {
     }
     const user = session.user as User;
 
-    const contactDocRef = doc(db, "users", user.id, "contacts", id);
-    await deleteDoc(contactDocRef);
+    const contactDocRef = adminDb.collection("users").doc(user.id).collection("contacts").doc(id);
+    await contactDocRef.delete();
 
     revalidatePath("/dashboard");
     return { success: "Contact removed." };
