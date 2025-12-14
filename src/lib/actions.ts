@@ -18,8 +18,6 @@ import { db, getRealtimeDB } from "./firebase";
 
 import type { User, Admin, EmergencyContact, LiveLocation } from "./definitions";
   
-const realtimeDB = getRealtimeDB();
-
 const COOKIE_NAME = "guardianangel-session";
 
 // --- AUTH ACTIONS ---
@@ -114,6 +112,7 @@ export async function triggerSOS(message: string, location: LiveLocation | null)
     return { error: "Location not available. Please enable GPS." };
   }
 
+  const realtimeDB = getRealtimeDB();
   const alertData = {
     userId: user.id,
     userName: user.name,
@@ -145,7 +144,8 @@ export async function updateLocation(location: {
   const session = await getSession();
   if (session?.user?.role !== "user") return;
   const user = session.user as User;
-
+  
+  const realtimeDB = getRealtimeDB();
   const locationData = { ...location, updatedAt: Date.now() };
   await set(ref(realtimeDB, `liveLocations/${user.id}`), locationData);
 }
