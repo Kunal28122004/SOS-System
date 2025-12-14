@@ -17,7 +17,7 @@ import {
 import { getDatabase, ref, set, push, get } from "firebase/database";
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 
-import type { User, Admin, EmergencyContact } from "./definitions";
+import type { User, Admin, EmergencyContact, LiveLocation } from "./definitions";
 
 // This is a server-side only Firebase instance.
 const firebaseConfig: FirebaseOptions = {
@@ -25,6 +25,9 @@ const firebaseConfig: FirebaseOptions = {
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 const serverApp = !getApps().some(app => app.name === 'server') 
@@ -118,20 +121,16 @@ async function getSession() {
   }
 }
 
-export async function triggerSOS(message: string) {
+export async function triggerSOS(message: string, location: LiveLocation | null) {
   const session = await getSession();
   if (session?.user?.role !== "user") {
     return { error: "Unauthorized" };
   }
   const user = session.user as User;
 
-  // Get latest location from Realtime DB
-  const locationRef = ref(realtimeDB, `liveLocations/${user.id}`);
-  const locationSnap = await get(locationRef);
-  if (!locationSnap.exists()) {
+  if (!location) {
     return { error: "Location not available. Please enable GPS." };
   }
-  const location = locationSnap.val();
 
   const alertData = {
     userId: user.id,

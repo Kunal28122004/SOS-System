@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MapPin, RefreshCw, WifiOff } from "lucide-react";
+import { MapPin, WifiOff } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,45 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { updateLocation } from "@/lib/actions";
 import { Skeleton } from "../ui/skeleton";
-
-type LocationState = {
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-} | null;
+import { useLocation } from "@/hooks/useLocation";
 
 export default function LocationCard() {
-  const [location, setLocation] = useState<LocationState>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser.");
-      return;
-    }
-
-    const handleSuccess = (position: GeolocationPosition) => {
-      const { latitude, longitude, accuracy } = position.coords;
-      const newLocation = { latitude, longitude, accuracy };
-      setLocation(newLocation);
-      setError(null);
-      updateLocation(newLocation);
-    };
-
-    const handleError = (error: GeolocationPositionError) => {
-      setError(`Error: ${error.message}`);
-    };
-
-    const watcher = navigator.geolocation.watchPosition(
-      handleSuccess,
-      handleError,
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-
-    return () => navigator.geolocation.clearWatch(watcher);
-  }, []);
+  const { location, error } = useLocation();
 
   return (
     <Card>

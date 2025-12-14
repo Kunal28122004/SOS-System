@@ -7,15 +7,17 @@ import { useToast } from "@/hooks/use-toast";
 import { triggerSOS } from "@/lib/actions";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { useLocation } from "@/hooks/useLocation";
 
 export default function SOSButton() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { location } = useLocation();
 
   const handleSOS = async () => {
     setIsSubmitting(true);
-    const result = await triggerSOS(message);
+    const result = await triggerSOS(message, location);
     setIsSubmitting(false);
 
     if (result?.error) {
