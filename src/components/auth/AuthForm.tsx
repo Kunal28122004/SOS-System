@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { Shield, User } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -25,8 +25,8 @@ export default function AuthForm() {
   const [role, setRole] = React.useState<Role>("user");
   const { toast } = useToast();
 
-  const [userFormState, userFormAction] = useFormState(loginAsUser, null);
-  const [adminFormState, adminFormAction] = useFormState(loginAsAdmin, null);
+  const [userFormState, userFormAction] = useActionState(loginAsUser, null);
+  const [adminFormState, adminFormAction] = useActionState(loginAsAdmin, null);
 
   React.useEffect(() => {
     if (userFormState?.error) {
