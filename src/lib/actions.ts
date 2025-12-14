@@ -4,8 +4,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { set, push } from "firebase/database";
-import { getRealtimeDB } from "./firebase";
 import { adminDb, adminRtdb } from "./firebase-admin";
 
 import type { User, Admin, EmergencyContact, LiveLocation } from "./definitions";
@@ -25,6 +23,9 @@ async function createSession(user: User | Admin) {
 }
 
 export async function loginAsUser(prevState: any, formData: FormData) {
+  if (!adminDb) {
+    return { error: "Firebase Admin is not configured." };
+  }
   const name = formData.get("name") as string;
   const phone = formData.get("phone") as string;
   const adminId = formData.get("adminId") as string;
@@ -56,6 +57,9 @@ export async function loginAsUser(prevState: any, formData: FormData) {
 }
 
 export async function loginAsAdmin(prevState: any, formData: FormData) {
+    if (!adminDb) {
+        return { error: "Firebase Admin is not configured." };
+    }
   const name = formData.get("name") as string;
   const adminId = formData.get("adminId") as string;
 
@@ -94,6 +98,9 @@ async function getSession() {
 }
 
 export async function triggerSOS(message: string, location: LiveLocation | null) {
+  if (!adminRtdb) {
+    return { error: "Firebase Admin is not configured." };
+  }
   const session = await getSession();
   if (session?.user?.role !== "user") {
     return { error: "Unauthorized" };
@@ -132,6 +139,7 @@ export async function updateLocation(location: {
   longitude: number;
   accuracy: number;
 }) {
+    if (!adminRtdb) return;
   const session = await getSession();
   if (session?.user?.role !== "user") return;
   const user = session.user as User;
@@ -143,6 +151,9 @@ export async function updateLocation(location: {
 // --- CONTACTS ACTIONS ---
 
 export async function addContact(formData: FormData) {
+    if (!adminDb) {
+        return { error: "Firebase Admin is not configured." };
+    }
   const session = await getSession();
   if (session?.user?.role !== "user") {
     return { error: "Unauthorized" };
@@ -164,6 +175,9 @@ export async function addContact(formData: FormData) {
 }
 
 export async function getContacts(): Promise<EmergencyContact[]> {
+    if (!adminDb) {
+        return [];
+    }
   const session = await getSession();
   if (session?.user?.role !== "user") {
     return [];
@@ -180,6 +194,9 @@ export async function getContacts(): Promise<EmergencyContact[]> {
 }
 
 export async function removeContact(id: string) {
+    if (!adminDb) {
+        return { error: "Firebase Admin is not configured." };
+    }
     const session = await getSession();
     if (session?.user?.role !== "user") {
         return { error: "Unauthorized" };
